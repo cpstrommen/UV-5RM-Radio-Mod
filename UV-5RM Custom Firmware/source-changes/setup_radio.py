@@ -1,4 +1,4 @@
-"""Give a freshly flashed radio the skull logo and the standard apps, in menu order.
+"""Give a freshly flashed radio a blank logo and the standard apps, in menu order.
 
   setup_radio.py COM3 LOGO.rgb565 CHUNK APPS_DIR
 Writes only what differs, so it's safe to run again after an interruption. Reads everything
@@ -18,7 +18,7 @@ port, logo_path, raw_chunk, apps_dir = sys.argv[1:]
 raw_chunk = int(raw_chunk)
 assert len(LAYOUT) == SLOT_COUNT
 apps = [open(os.path.join(apps_dir, name), "rb").read() for name in LAYOUT]
-logo = open(logo_path, "rb").read()
+logo = bytes(LOGO_SIZE)
 assert len(logo) == LOGO_SIZE, len(logo)
 assert all(a[:4] == b"OVL1" and len(a) <= SLOT_SIZE for a in apps)
 cps = Cps(port)

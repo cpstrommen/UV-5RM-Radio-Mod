@@ -537,7 +537,7 @@ impl Settings {
         band_short: 6,  // Scan (physical "SCAN" button)
         band_long: 0,   // None
         band_lock: 1,
-        boot_display_mode: 2,
+        boot_display_mode: 0,
         boot_sound_enabled: true,
         boot_text_line1: [0; 16],
         boot_text_line2: [0; 16],

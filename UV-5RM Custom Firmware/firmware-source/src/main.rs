@@ -107,24 +107,6 @@ fn check_power_off(
     }
 }
 
-#[inline(never)]
-fn draw_boot_logo(
-    display: &mut device::display::Display<'_>,
-    app: &mut app::App<'_>,
-) {
-    let width = flash_map::BOOT_LOGO_WIDTH as u32;
-    let rows = flash_map::BOOT_LOGO_HEIGHT / ui::boot::LOGO_CHUNK_ROWS;
-    for band in 0..rows {
-        let y0 = band * ui::boot::LOGO_CHUNK_ROWS;
-        let mut chunk = [0u8; ui::boot::LOGO_CHUNK_BYTES];
-        app.storage_mut().read_raw(
-            flash_map::addr::BOOT_LOGO_ADDR + y0 as u32 * width * 2,
-            &mut chunk,
-        );
-        ui::boot::draw_logo_chunk(display.as_draw_target(), y0, &chunk);
-    }
-}
-
 #[entry]
 fn main() -> ! {
     let dp = unsafe { pac::Peripherals::steal() };
@@ -276,7 +258,28 @@ fn main() -> ! {
 
     let mut rfic = Fd6818::new(&dp.gpioa, &dp.gpioc);
     let chip_id = rfic.chip_id(&mut cp.SYST);
-    dbg_println!(serial, "fd6818 chip id = {chip_id:#06x} (expect 0x4829)");
+    dbg_println!(serial, "RF chip id = {chip_id:#06x}");
+    #[cfg(all(feature = "bk4819", feature = "rx-only"))]
+    {
+        serial.write_str("BK experimental chip=0x").ok();
+        for shift in [12, 8, 4, 0] {
+            serial.write_byte(
+                b"0123456789ABCDEF"[((chip_id >> shift) & 15) as usize],
+            );
+        }
+        serial.write_str(" RX ONLY\n").ok();
+    }
+    #[cfg(feature = "bk4819")]
+    if chip_id != drivers::fd6818b::EXPECTED_CHIP_ID {
+        #[cfg(feature = "rx-only")]
+        serial
+            .write_str("RF chip mismatch; halted before initialization\n")
+            .ok();
+        board::set_power_latch(&dp.gpiof, false);
+        loop {
+            cortex_m::asm::wfi();
+        }
+    }
 
     rfic.init(&mut cp.SYST);
     dbg_println!(serial, "fd6818 init done");
@@ -345,12 +348,8 @@ fn main() -> ! {
     app.init_battery_samples();
 
     let boot_mode = app.settings().boot_display_mode;
-    match boot_mode {
-        1 | 2 => draw_boot_logo(&mut display, &mut app),
-        // 0 = None: screen is already cleared black from just after
-        // `display.init()`, nothing more to draw.
-        _ => {}
-    }
+    // Boot artwork was removed. The display is already black after init;
+    // retain boot_mode only for the user's existing sound/tune preference.
 
     backlight.on();
 

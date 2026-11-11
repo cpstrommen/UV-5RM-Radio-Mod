@@ -1,19 +1,6 @@
 use crate::drivers::norflash::{NorFlash, SECTOR_SIZE};
 
-pub(crate) fn crc16_xmodem(data: &[u8]) -> u16 {
-    let mut crc: u16 = 0;
-    for &byte in data {
-        crc ^= (byte as u16) << 8;
-        for _ in 0..8 {
-            crc = if crc & 0x8000 != 0 {
-                (crc << 1) ^ 0x1021
-            } else {
-                crc << 1
-            };
-        }
-    }
-    crc
-}
+pub(crate) use super::crc::crc16_xmodem;
 
 const CLEAR_MASK: [u8; 8] = [0xFE, 0xFC, 0xF8, 0xF0, 0xE0, 0xC0, 0x80, 0x00];
 

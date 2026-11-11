@@ -1,0 +1,82 @@
+{
+  "compiler": "rustc 1.99.1 (58cf8f9c3 2026-10-13)",
+  "firmware_features": [
+    "bk4819",
+    "airband"
+  ],
+  "firmware_application_bytes": 60892,
+  "app_abi_unchanged": true,
+  "segments": [
+    {
+      "segment": 0,
+      "image": 8012,
+      "bss": 4,
+      "ram_total": 8016
+    },
+    {
+      "segment": 1,
+      "image": 7152,
+      "bss": 4,
+      "ram_total": 7156
+    },
+    {
+      "segment": 2,
+      "image": 6744,
+      "bss": 4,
+      "ram_total": 6748
+    },
+    {
+      "segment": 3,
+      "image": 7868,
+      "bss": 4,
+      "ram_total": 7872
+    }
+  ],
+  "files": {
+    "airband/airband.db": {
+      "bytes": 305129,
+      "sha256": "16db31f1440a1428d290d5dc6d8fb4f94af343d201aae696aac69a55c2925208"
+    },
+    "apps/airband.app": {
+      "bytes": 29884,
+      "sha256": "9a0b98c280816304db2f4a692d6911acf6ea23257463f329645a55792d56a6f1"
+    },
+    "airband/UV-5RM_AIRBAND_BK4819.BF": {
+      "bytes": 60908,
+      "sha256": "6cf9ff04cf025ab7368396ca0d6d7892a9eaf37e44e0c51d1bf3b5c15eee1413"
+    }
+  },
+  "hardware_tested": true,
+  "validation": {
+    "python_checks": 12,
+    "native_test_runs": 41,
+    "native_profiles": [
+      "directory",
+      "services",
+      "nearby",
+      "listener",
+      "firmware menu routes with and without AIRBAND"
+    ],
+    "legacy_offline_checks": 14,
+    "original_firmware_build": true,
+    "bk4819_base_firmware_build": true,
+    "radio_connected": true,
+    "hardware_install_readback_verified": true,
+    "blank_artwork_verified": true,
+    "database_preserved": true,
+    "favorites_preserved": true,
+    "text_preserved": true,
+    "channels_preserved": true,
+    "calibration_preserved": true,
+    "settings_preserved": true,
+    "txinh_on": true,
+    "user_interface_tested": false,
+    "am_audio_tested": false
+  },
+  "release": "AIRBAND",
+  "firmware_build_config": "source-changes/airband/firmware.toml",
+  "firmware_extra_rustflags": [
+    "-C",
+    "llvm-args=--enable-machine-outliner=always"
+  ]
+}

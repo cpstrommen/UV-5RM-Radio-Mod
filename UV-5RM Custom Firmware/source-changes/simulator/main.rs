@@ -1111,7 +1111,7 @@ fn test_fox() {
     app(&API, AppEvent::Leave);
 }
 
-// menu list, using the firmware's real list.rs and backdrop.rs
+// menu list, using the firmware's real list.rs and plain backdrop.rs
 
 struct Menu {
     rows: &'static [(&'static str, Option<&'static str>)],
@@ -1141,7 +1141,7 @@ impl ui::list::ListSource for Menu {
 }
 
 fn test_menus() {
-    println!("Menus: firmware list code over the real logo");
+    println!("Menus: firmware list code over a plain black background");
     let logo = std::fs::read(std::env::args().nth(2).unwrap()).unwrap();
     assert_eq!(logo.len(), 160 * 128 * 2);
     const MODES: &[(&str, Option<&str>)] = &[
@@ -1170,8 +1170,8 @@ fn test_menus() {
         let mut cache = ui::list::Cache::new();
         ui::list::draw_list(sim(), title, &mut menu, selected, false, &mut cache);
         shot(name);
-        let red = sim().fb.iter().filter(|&&p| (p >> 11) > 2 && (p >> 5) & 0x3F < 4).count();
-        check(red > 2000, &format!("{name}: skull visible behind the list"));
+        let black = sim().fb.iter().filter(|&&p| p == 0).count();
+        check(black > 10_000, &format!("{name}: menu body is plain black"));
         // Moving the cursor must repaint only two rows, and match a full draw.
         if selected > 0 {
             ui::list::draw_list(sim(), title, &mut menu, selected - 1, false, &mut cache);
@@ -1197,13 +1197,16 @@ fn test_menus() {
     ui::list::draw_list(sim(), "MODE", &mut menu, 8, false, &mut ui::list::Cache::new());
     check(scrolled == sim().fb, "scrolling matches a full redraw");
 
-    // Blank logo: text must still be readable rather than white on white.
+    // Stored artwork cannot affect the rendered menu background.
     reset(0);
     let mut menu = Menu { rows: MODES, logo: vec![0xFF; 160 * 128 * 2] };
     ui::list::draw_list(sim(), "MODE", &mut menu, 3, false, &mut ui::list::Cache::new());
     shot("menu_5_blank_logo");
-    let white = sim().fb.iter().filter(|&&p| p == 0xFFFF).count();
-    check(white < 2000, "an erased logo shows black, not white");
+    let erased = sim().fb.clone();
+    reset(0);
+    let mut menu = Menu { rows: MODES, logo: vec![0; 160 * 128 * 2] };
+    ui::list::draw_list(sim(), "MODE", &mut menu, 3, false, &mut ui::list::Cache::new());
+    check(erased == sim().fb, "stored artwork never affects menu rendering");
 }
 
 // SEARCH QT: two parts in one package, with the firmware's Chain emulated.

@@ -13,6 +13,12 @@ bench = false
 
 [features]
 default = []
+# Explicit hardware selection; default remains the tested YP07/FD6818B build.
+bk4819 = []
+# AIR1 database partition and block-addressed upload; replaces satellite-data upload.
+airband = []
+# Bench bring-up: refuse every request to enter transmit, including apps.
+rx-only = []
 
 [dependencies]
 cortex-m = "0.7"

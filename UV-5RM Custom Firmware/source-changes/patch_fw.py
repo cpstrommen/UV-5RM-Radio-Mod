@@ -16,12 +16,12 @@ def patch(rel, *pairs):
     open(path, "w", encoding="utf-8", newline="").write(s)
 
 
-# --- defaults: logo at boot, single-watch, transmit off until enabled in settings
+# --- defaults: plain boot screen, single-watch, transmit off until enabled in settings
 patch("src/flash_map.rs",
       ("    pub const OVERLAY_SLOT_COUNT: u8 = 8;\n", "    pub const OVERLAY_SLOT_COUNT: u8 = 9;\n"),
       ("        tx_forbid: false,\n", "        tx_forbid: true,\n"),
       ("        dual_standby: true,\n", "        dual_standby: false,\n"),
-      ("        boot_display_mode: 1,\n", "        boot_display_mode: 2,\n"),
+      ("        boot_display_mode: 1,\n", "        boot_display_mode: 0,\n"),
       ("        boot_sound_enabled: false,\n", "        boot_sound_enabled: true,\n"),
       ("    pub fn tx_freq_deci_hz(&self) -> u32 {\n        bcd4_to_deci_hz(self.tx_freq_bcd)\n    }\n",
        "    pub fn tx_freq_deci_hz(&self) -> u32 {\n        bcd4_to_deci_hz(self.tx_freq_bcd)\n    }\n\n"
@@ -37,12 +37,12 @@ patch("src/main.rs",
        "        storage.mark_first_boot_done();\n"
        "    }\n"))
 
-# --- the logo replaces the text boot screen, which frees the flash the modes need
+# --- remove boot artwork; the display is already cleared black after init
 patch("src/main.rs",
       ("        1 => {\n            ui::boot::draw_message(\n                display.as_draw_target(),\n"
        "                app.settings(),\n                app.battery_voltage_cv(),\n                app.battery_bars(),\n"
        "                chip_id,\n            );\n        }\n        2 => draw_boot_logo(&mut display, &mut app),\n",
-       "        1 | 2 => draw_boot_logo(&mut display, &mut app),\n"))
+       "        1 | 2 => {},\n"))
 
 # --- channel side: AM from band, receive-only guard
 patch("src/app/side.rs",
@@ -241,7 +241,7 @@ patch("src/ui/standby.rs",
 patch("apps/fm/src/main.rs",
       ("const TITLE_BG: u16 = 0x0881;\n", "const TITLE_BG: u16 = 0x5800;\n"))
 
-# --- menus sit on a dimmed copy of the skull; the main and scan screens stay black
+# --- all firmware menus use the same plain black background
 patch("src/ui/mod.rs", ("mod icons;\n", "mod backdrop;\nmod icons;\n"))
 patch("src/ui/list.rs",
       ("use super::{clear_strip, TextBuf, SCREEN_H, SCREEN_W};\n",
